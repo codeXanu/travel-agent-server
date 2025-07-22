@@ -1,49 +1,7 @@
 import {config} from "dotenv";
 config();
 
-const rapidApiKey = process.env.RAPIDAPI_KEY; // Use from .env
-/**
- * Gets IATA codes from city names (mocked)
- */
-// export async function getIATACode({ fromCity, toCity }) {
-//   const mockDatabase = {
-//     Delhi: "DEL",
-//     Mumbai: "BOM",
-//     Lucknow: "LKO",
-//     Bangalore: "BLR",
-//     Hyderabad: "HYD",
-//   };
-
-//   const fromIATA = mockDatabase[fromCity];
-//   const toIATA = mockDatabase[toCity];
-
-//   if (!fromIATA || !toIATA) {
-//     throw new Error("One or both city IATA codes not found");
-//   }
-
-//   return { fromIATA, toIATA };
-// }
-
-/**
- * Gets flight data using IATA codes and travel date (mocked)
- */
-// export async function getFlightData({ fromIATA, toIATA, date }) {
-//   return {
-//     airline: "IndiGo",
-//     flight: "6E-456",
-//     from: fromIATA,
-//     to: toIATA,
-//     date,
-//     price: "₹4,200",
-//     departure: "09:00 AM",
-//     arrival: "11:10 AM",
-//   };
-// }
-
-
-
-
-// controllers/getData.js
+const rapidApiKey = process.env.RAPIDAPI_KEY; 
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -144,7 +102,7 @@ export async function getFlightsViaSkyId({ fromCity, toCity, date }) {
 
 
 export async function getWeather(toCity) {
-  const apiKey = process.env.WEATHERAPI_KEY; // Replace with your actual API key
+  const apiKey = process.env.WEATHERAPI_KEY; 
   const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(toCity)}&appid=${apiKey}&units=metric`;
 
   try {
@@ -157,10 +115,10 @@ export async function getWeather(toCity) {
 
     return {
       fromCity: data.name,
-      condition: data.weather[0].main,       // e.g., Clear, Rain, etc.
-      temperature: `${data.main.temp}°C`,    // e.g., 31.5°C
-      humidity: `${data.main.humidity}%`,    // e.g., 45%
-      wind: `${data.wind.speed} km/h`        // e.g., 10.8 km/h
+      condition: data.weather[0].main,       
+      temperature: `${data.main.temp}°C`,    
+      humidity: `${data.main.humidity}%`,    
+      wind: `${data.wind.speed} km/h`        
     };
   } catch (error) {
     console.error("Error fetching weather:", error.message);

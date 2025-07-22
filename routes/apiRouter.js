@@ -31,31 +31,6 @@ const functionDefinitions = [
   
     },
 
-    // {
-    //     name: "getWeather",
-    //     description: "Get weather forecast for a city on a specific date",
-    //     parameters: {
-    //         type: "object",
-    //         properties: {
-    //         location: { type: "string", description: "City or destination" },
-    //         date: { type: "string", description: "Date in YYYY-MM-DD format" },
-    //         },
-    //         required: ["location", "date"],
-    //     },
-    // },
-    // {
-    //     name: "getHotels",
-    //     description: "Get hotel options in a city on a specific date",
-    //     parameters: {
-    //         type: "object",
-    //         properties: {
-    //         location: { type: "string", description: "City or destination or toCity" },
-    //         date: { type: "string", description: "Date of stay in YYYY-MM-DD format" },
-    //         },
-    //         required: ["location", "date"],
-    //     },
-    // }
-
 ];
 
 router.post("/ask", async (req, res) => {
@@ -95,7 +70,10 @@ router.post("/ask", async (req, res) => {
         messages.push({
           role: "tool",
           tool_call_id: toolCall.id,
-          content: JSON.stringify(result),
+          content: JSON.stringify({
+            flightData: result,
+            note: "Extract the best travel option (origin, destination, departure, arrival time, price, airline name) from this data, convert the price to INR if needed (assume 1 USD = 86 INR), and give a short conversational travel plan summary."
+          }),
         });
       } else {
         return res.json({ reply: responseMsg.content });
