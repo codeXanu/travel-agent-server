@@ -2,7 +2,7 @@
 import express from "express";
 import { OpenAI } from "openai";
 import {config} from "dotenv";
-import { getFlightData, getIATACode, getWeather,getHotels } from "../controllers/getData.js";
+import { getWeather,getHotels, getFlightsViaSkyId } from "../controllers/getData.js";
 
 const router = express.Router();
 
@@ -10,70 +10,61 @@ config();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const availableFunctions = {
-  getIATACode,
-  getFlightData,
+  getFlightsViaSkyId,
   getWeather,
   getHotels,
 };
 
 const functionDefinitions = [
     {
-        name: "getIATACode",
-        description: "Get the IATA airport codes from city names",
-        parameters: {
+      name: "getFlightsViaSkyId",
+      description: "Get flight details using RapidAPI's Flight Scraper based on city names and date",
+      parameters: {
         type: "object",
         properties: {
-            fromCity: { type: "string", description: "Departure city name" },
-            toCity: { type: "string", description: "Destination city name" },
+          fromCity: { type: "string", description: "Departure city name" },
+          toCity: { type: "string", description: "Destination city name" },
+          date: { type: "string", description: "Departure date in YYYY-MM-DD format" }
         },
-        required: ["fromCity", "toCity"],
-        },
+        required: ["fromCity", "toCity", "date"]
+      }
+  
     },
-    {
-        name: "getFlightData",
-        description: "Get flight details between two airports based on IATA codes and travel date",
-        parameters: {
-        type: "object",
-        properties: {
-            fromIATA: { type: "string", description: "Departure IATA code" },
-            toIATA: { type: "string", description: "Destination IATA code" },
-            date: { type: "string", description: "Travel date in YYYY-MM-DD" },
-        },
-        required: ["fromIATA", "toIATA", "date"],
-        },
-    },
-    {
-        name: "getWeather",
-        description: "Get weather forecast for a city on a specific date",
-        parameters: {
-            type: "object",
-            properties: {
-            location: { type: "string", description: "City or destination" },
-            date: { type: "string", description: "Date in YYYY-MM-DD format" },
-            },
-            required: ["location", "date"],
-        },
-    },
-    {
-        name: "getHotels",
-        description: "Get hotel options in a city on a specific date",
-        parameters: {
-            type: "object",
-            properties: {
-            location: { type: "string", description: "City or destination" },
-            date: { type: "string", description: "Date of stay in YYYY-MM-DD format" },
-            },
-            required: ["location", "date"],
-        },
-    }
+
+    // {
+    //     name: "getWeather",
+    //     description: "Get weather forecast for a city on a specific date",
+    //     parameters: {
+    //         type: "object",
+    //         properties: {
+    //         location: { type: "string", description: "City or destination" },
+    //         date: { type: "string", description: "Date in YYYY-MM-DD format" },
+    //         },
+    //         required: ["location", "date"],
+    //     },
+    // },
+    // {
+    //     name: "getHotels",
+    //     description: "Get hotel options in a city on a specific date",
+    //     parameters: {
+    //         type: "object",
+    //         properties: {
+    //         location: { type: "string", description: "City or destination or toCity" },
+    //         date: { type: "string", description: "Date of stay in YYYY-MM-DD format" },
+    //         },
+    //         required: ["location", "date"],
+    //     },
+    // }
 
 ];
 
 router.post("/ask", async (req, res) => {
-  const userMessage = req.body.message;
-
   console.log("req Recieved")
+  const { fromCity, toCity, fromDate, toDate, budget, travellers } = req.body.input;
 
+  const userMessage = `Find flight for a trip for ${travellers} people from ${fromCity} to ${toCity} on ${fromDate} with a budget of ₹${budget}.Suggest just a short conversational summary of the best travel plan. `
+
+  
   let messages = [
     { role: "system", content: "You are a helpful travel assistant." },
     { role: "user", content: userMessage },
@@ -119,11 +110,11 @@ router.post("/ask", async (req, res) => {
 // for getting the details of weather and hotels
 
 router.post("/details", async (req, res) => {
-  const { location, fromDate, toDate, travelers } = req.body;
+  const { fromCity, toCity, fromDate, toDate, budget, travellers } = req.body.input;
 
   try {
-    const weather = await getWeather(location);
-    const hotels = await getHotels(location, fromDate, toDate, travelers);
+    const weather = await getWeather(toCity);
+    const hotels = await getHotels(toCity, fromDate, toDate, travellers);
 
     // Step 1: Ask GPT to reply about weather
     const weatherMsg = [
@@ -146,7 +137,7 @@ router.post("/details", async (req, res) => {
       { role: "system", content: "You are a helpful travel assistant." },
       {
         role: "user",
-        content: `Based on these hotels in ${location}, suggest one good option which is lowest in cost and ask user if they want to book: ${JSON.stringify(hotels)}`,
+        content: `Based on these hotels in ${toCity}, suggest one good option which is lowest in cost and ask user if they want to book: ${JSON.stringify(hotels)}`,
       },
     ];
 
@@ -163,6 +154,10 @@ router.post("/details", async (req, res) => {
       hotelData: hotels,
       weatherReply,
       hotelReply,
+      fromCity,
+      toCity,
+      fromDate,
+      toDate
     });
   } catch (err) {
     console.error(err);

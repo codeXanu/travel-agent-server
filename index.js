@@ -15,10 +15,10 @@ app.use(express.json());
 
 app.use("/api", apiRouter);
 
-app.post("/message", (req, res) => {
-  console.log("REQ RECIEVED")
-  res.json({ reply: "This is a hardcoded response from the server!" });
-});
+// app.post("/message", (req, res) => {
+//   console.log("REQ RECIEVED")
+//   res.json({ reply: "This is a hardcoded response from the server!" });
+// });
 
 // Start server
 app.listen(PORT, () => {
