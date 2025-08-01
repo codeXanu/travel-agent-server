@@ -2,6 +2,7 @@ import {config} from "dotenv";
 config();
 
 const rapidApiKey = process.env.RAPIDAPI_KEY; 
+const rapidApiKeyHotel = process.env.RAPIDAPI_KEY_HOTEL
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -138,9 +139,9 @@ export async function getWeather(toCity) {
 
 export async function getHotels(toCity, fromDate, toDate, travellers) {
   
-  // const rapidApiHost = process.env.RAPIDAPI_HOST
+  
   const headers = {
-    "X-RapidAPI-Key": rapidApiKey,
+    "X-RapidAPI-Key": rapidApiKeyHotel,
     "X-RapidAPI-Host": "booking-com.p.rapidapi.com"
   };
 
